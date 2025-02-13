@@ -1,0 +1,69 @@
+<%- layout('layouts/boilerplate') %>
+<body>
+  <div class="row">
+    <div class="col-8 offset-2">
+      <h1>Add new data here</h1>
+      <form action="/" method="post" novalidate>
+        <div>
+          <label for="title" class="form-label">Title</label>
+          <input
+            type="text"
+            class="form-control"
+            name="title"
+            id="title"
+            required
+          />
+          <div class="valid-feedback">That's look amazing</div>
+        </div>
+
+        <div>
+          <label for="description" class="form-label">Description</label>
+          <textarea
+            required
+            name="description"
+            class="form-control"
+            id="description"
+          ></textarea>
+        </div>
+
+        <div>
+          <label for="image" class="form-label">Image</label>
+          <input
+            type="text"
+            class="form-control"
+            name="image"
+            id="image"
+            required
+          />
+        </div>
+
+        <div>
+          <label for="price" class="form-label">Price</label>
+          <input
+            type="number"
+            class="form-control"
+            name="price"
+            id="price"
+            required
+          />
+          <div class="invalid-feedback">Price should be valid</div>
+        </div>
+
+        <div>
+          <label for="location" class="form-label">Location</label>
+          <input
+            type="text"
+            class="form-control"
+            name="location"
+            id="location"
+            required
+          />
+        </div>
+
+        <div>
+          <button class="btn btn-dark">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>

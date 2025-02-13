@@ -1,0 +1,69 @@
+<%- layout('layouts/boilerplate') %>
+<body>
+  <div class="row">
+    <div class="col-8 offset-2">
+      <h1>Edit this listing here</h1>
+      <form action="/listing/<%= list.id %>/?_method=PUT" method="post">
+        <div class="mb-3">
+          <label for="title" class="form-label">Title</label>
+          <input
+            type="text"
+            name="listing[title]"
+            id="title"
+            placeholder="<%= list.title%>"
+            value="<%= list.title%>"
+            class="form-control"
+          />
+        </div>
+
+        <div class="mb-3">
+          <label for="description" class="form-label">Description</label>
+          <textarea
+            class="form-control"
+            name="listing[description]"
+            id="description"
+            placeholder="<%= list.description %>"
+          >
+<%= list.description %></textarea
+          >
+        </div>
+
+        <div class="mb-3">
+          <label for="image" class="form-label">Image</label>
+          <input
+            type="text"
+            name="listing[image]"
+            id="image"
+            placeholder="Drop link "
+            class="form-control"
+          />
+        </div>
+        <div class="row">
+          <div class="mb-3 col-md-2">
+            <label for="price" class="form-label">Price</label>
+            <input
+              type="text"
+              name="listing[price]"
+              id="price"
+              value="<%= list.price%>"
+              class="form-control"
+            />
+          </div>
+          <div class="mb-3 col-md-6">
+            <label for="location" class="form-label">Location</label>
+            <input
+              class="form-control"
+              type="text"
+              name="listing[location]"
+              id="location"
+              value="<%= list.location%>"
+            />
+          </div>
+        </div>
+        <div>
+          <button class="btn btn-dark">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>

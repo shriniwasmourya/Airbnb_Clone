@@ -1,0 +1,24 @@
+<%- layout('layouts/boilerplate') %>
+<body>
+  <div class="row">
+    <div class="col-8 offset-2">
+      <h1>Detail of single Builiding..</h1>
+    </div>
+    <div class="col-6 offset-2">
+      <img src="<%= list.image %>" alt="" />
+    </div>
+    <div class="row">
+      <div class="col-8 offset-2">
+        <h2><%=list.title%></h2>
+        <p><%= list.description %></p>
+        <p>₹<%= list.price.toLocaleString("en-IN") %></p>
+        <h4><%= list.location %></h4>
+        
+        <a href="/listing/<%= list.id %>/edit"><button>Edit this Listing</button></a>
+        <form action="/listing/<%= list.id %>/?_method=DELETE" method="post">
+          <button class="btn mt-3  mb-2">DELETE</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
