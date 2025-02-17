@@ -24,7 +24,11 @@ app.use(express.json());
 //Moongose basic setup
 
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/airbnb");
+  await mongoose.connect("mongodb+srv://airbnb:0UCUnRTaavBgo9CT@airbnb.ip8tf.mongodb.net/?retryWrites=true&w=majority&appName=airbnb");
+  //pwd : 0UCUnRTaavBgo9CT
+  //  mongodb+srv://airbnb:0UCUnRTaavBgo9CT@airbnb.ip8tf.mongodb.net/?retryWrites=true&w=majority&appName=airbnb
+
+  
 }
 
 main()
@@ -42,9 +46,7 @@ app.get("/", async (req, res) => {
   res.render("./listing/index.ejs", { lists });
 });
 
-app.listen(3600, () => {
-  console.log("Server start at port 3600");
-});
+
 
 app.get("/testListing", (req, res) => {
   let user1 = new Listing({
@@ -67,6 +69,7 @@ app.get("/testListing", (req, res) => {
 });
 
 app.put("/listing/:id", async (req, res) => {
+  console.log("yaha req aayi hai....");
   const editvalue = new Listing(req.body.listing);
   let { id } = req.params;
   if(!req.params.id){
@@ -87,16 +90,24 @@ app.get("/listing/new", (req, res) => {
 
 /*Joi function to validate data */
 
-const validateJoi = (req , res , body) => {
-  let {error} = listingSchema.validate(req.body);
+// const validateJoi = (req , res , body) => {
+//   let {error} = listingSchema.validate(req.body);
 
-  if(error){
-    let errmsg = error.details.map((e)=>e.message).join(",");
-    throw new ExpressError(404 , errmsg);
+//   if(error){
+//     let errmsg = error.details.map((e)=>e.message).join(",");
+//     throw new ExpressError(404 , errmsg);
+//   }
+
+// }
+
+const validateJoi = (req, res, next) => {
+  let { error } = listingSchema.validate(req.body);
+  if (error) {
+    let errmsg = error.details.map((e) => e.message).join(",");
+    return next(new ExpressError(400, errmsg)); // Proper error handling
   }
-
-}
-
+  next(); // Continue to next middleware
+};
 
 
 
@@ -142,8 +153,10 @@ app.use((err , req , res , next)=>{
 
 
 
-app.get("/listing/:id", validateJoi , (req, res) => {
+app.get("/listing/:id",  (req, res) => {
+  console.log("yaha req aayi hai...."); 
   let { id } = req.params;
+  console.log(id);
   let idc = id.replace(/[${}`]/g, "");
   let list = {};
   Listing.findById(id)
@@ -155,7 +168,7 @@ app.get("/listing/:id", validateJoi , (req, res) => {
     });
 });
 
-app.get("/listing/:id/edit",validateJoi ,async (req, res) => {
+app.get("/listing/:id/edit",async (req, res) => {
   let { id } = req.params;
   id = id.replace(/[${}`]/g, "");
   let list = await Listing.findById(id);
@@ -164,7 +177,8 @@ app.get("/listing/:id/edit",validateJoi ,async (req, res) => {
 
 //Delete Route
 
-app.delete('/listing/:id' ,validateJoi, (req , res) => {
+app.delete('/listing/:id' , (req , res) => {
+  console.log("yaha req aayi hai....");
   let {id} = req.params;
   console.log(id);
 
@@ -190,3 +204,8 @@ app.use((err , req ,res , next) => {
   // res.status(statusCode).send(message);
   res.render('error.ejs' , {err})
 })
+
+
+app.listen(3600, () => {
+  console.log("Server start at port 3600");
+});

@@ -105,7 +105,7 @@ a:hover {
 
 .card-img-overlay:hover {
   opacity: 0.2;
-  background-color: white;
+  background-color: white; 
 }
 
 .btn {
@@ -119,3 +119,6 @@ a:hover {
 }
 
 
+footer{
+  margin: 10.3rem 0 0rem 0 !important;
+}
