@@ -13,7 +13,7 @@ body {
 
 img {
   height: 300px;
-  width: 300px;
+  width: 55vw;
   object-fit: cover;
 }
 
@@ -80,7 +80,7 @@ a:hover {
 
 /* Cards */
 
-.card {
+.listing-card {
   border: none !important;
   margin-bottom: 2rem;
   width: 22% !important;
@@ -113,9 +113,11 @@ a:hover {
   border: none !important;
 }
 
-.row {
+/* .row {
   display: flex;
   justify-content: center;
-}
+} */
 
-
+/* .post-img{
+  position: relative;
+} */

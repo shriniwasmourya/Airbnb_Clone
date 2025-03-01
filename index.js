@@ -6,7 +6,17 @@ const Listing = require("./model/listing.js");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require('./utils/wrapAsync.js')
 const ExpressError = require('./utils/ExpressError.js');
-const {listingSchema} = require('./schema.js');
+const {listingSchema , reviewSchema} = require('./schema.js');    //grey clr bcz this method not used in this file
+const review = require("./model/review.js");
+const listing = require("./routes/listing.js")
+const reviewRoute = require('./routes/review.js')
+const cookie = require('./routes/cookies.js');
+const cookieParser = require('cookie-parser');
+const session = require('express-session');
+const flash = require('connect-flash');
+const { name } = require("ejs");
+
+
 
 const app = express();
 app.use(method("_method"));
@@ -35,18 +45,88 @@ main()
     console.error(err);
   });
 
-app.get("/", async (req, res) => {
-  console.log("Root page request received!");
-  let lists = await Listing.find();
-  // console.log(data);
-  res.render("./listing/index.ejs", { lists });
-});
+
+  //Cookies : small block of data that cret by web server while user broweing a website and stred in locl systm
+
+  app.use('/getcookies' , cookie);
+
+  app.use(cookieParser());
+
 
 app.listen(3600, () => {
   console.log("Server start at port 3600");
 });
 
+
+//Express Session 
+
+app.use(session({secret : "secretcodeencodewithrandomeword" , resave : false , saveUninitialized :false}));
+app.use(flash());   //sirf itna krne se isko use kr skte hai..
+
+app.get("/session" , (req , res) => {
+  
+  res.send('Session successfully');   
+})
+
+//how to track session request 
+
+app.get("/requestcount" , (req , res) => {
+  if(req.session.count){
+    req.session.count++;
+  }else{
+    req.session.count =1;
+  }
+
+  res.send(`request count received ${req.session.count} times`);
+  //every time you refreshed , no. of req increase but session to ek he hai bs req inc/dec hoti rehti hai
+})
+
+
+//isko kese store or use kr skte hai website me 
+
+// app.get("/register" , (req , res) => {
+//   // req.flash("success" , "User Session created successsfully");
+
+//   // if(req.session.name == 'anonymous'){
+    
+//   // }
+//   // req.flash("error" , "User not registered!");
+
+//   let {name = "Anonymous"} = req.query;
+//   console.log(req.session);
+//   req.session.name = name;
+//   // res.send(`${name}`);
+//   res.redirect('/hello')
+// })
+
+
+//we use middleware to use res.local msgs..
+
+// app.use((req , res , next) => {
+// //res.locals : used to store var for render lke name in this case
+// // res.locals.successMsg = res.flash("success");
+// // res.locals.errorMsg = res.flash("error");
+
+// next();
+
+// })
+
+// app.get("/hello" , (req , res) => {
+//   // res.send(`Hello ${req.session.name}`);
+
+
+
+//   res.render("flash.ejs" , {name : req.session.name});
+// })
+
+//Connect flash : ye jab bhi koi chez hoti hai ek msh pop hokr aata hai..
+//like alert , or something like that..
+
+
+
+
 app.get("/testListing", (req, res) => {
+  console.log(req.cookies);
   let user1 = new Listing({
     title: "My new Villa",
     description: "My new house",
@@ -66,69 +146,9 @@ app.get("/testListing", (req, res) => {
   res.send("successfully testing");
 });
 
-app.put("/listing/:id", async (req, res) => {
-  const editvalue = new Listing(req.body.listing);
-  let { id } = req.params;
-  if(!req.params.id){
-    throw new ExpressError(404 , "Plese fill valid data!");
-  }
-  id = id.replace(/[${}`]/g, "");
-  let updateDetails = await Listing.findByIdAndUpdate(id, {
-    ...req.body.listing,
-  });
-  res.redirect(`/listing/${id}`);
-});
 
-app.get("/listing/new", (req, res) => {
-  console.log("OK");
-  res.render("./listing/addnew.ejs");
-});
-
-
-/*Joi function to validate data */
-
-const validateJoi = (req , res , body) => {
-  let {error} = listingSchema.validate(req.body);
-
-  if(error){
-    let errmsg = error.details.map((e)=>e.message).join(",");
-    throw new ExpressError(404 , errmsg);
-  }
-
-}
-
-
-
-
-
-
-app.post("/", validateJoi ,wrapAsync(async(req, res , next) => {
-  console.log("Data received!");
-  try{
-  let { title, description, price, image, location } = req.body;
-  console.log(title);
-  let user = new Listing({
-    title: title,
-    description: description,
-    image: image,
-    price: price,
-    location: location,
-  });
-
-  await user
-    .save()
-    .then((res) => {
-      console.log(res);
-    })
-    // .catch((err) => {
-    //   console.log(err);
-    // });
-  res.redirect("/");
-  }catch(err){
-    // next(new ExpressError(404 , "Something WentWrong!"));
-    next(err);
-  }
-}));
+app.use("/listing" , listing);
+app.use('/listing/:id/review' , reviewRoute);
 
 //middleware to handle async
 
@@ -142,43 +162,8 @@ app.use((err , req , res , next)=>{
 
 
 
-app.get("/listing/:id", validateJoi , (req, res) => {
-  let { id } = req.params;
-  let idc = id.replace(/[${}`]/g, "");
-  let list = {};
-  Listing.findById(id)
-    .then((list) => {
-      res.render("./listing/post.ejs", { list });
-    })
-    .catch((err) => {
-      console.log(err);
-    });
-});
 
-app.get("/listing/:id/edit",validateJoi ,async (req, res) => {
-  let { id } = req.params;
-  id = id.replace(/[${}`]/g, "");
-  let list = await Listing.findById(id);
-  res.render("./listing/edit.ejs", { list });
-});
-
-//Delete Route
-
-app.delete('/listing/:id' ,validateJoi, (req , res) => {
-  let {id} = req.params;
-  console.log(id);
-
-  Listing.findByIdAndDelete(id).then(result => {
-    console.log(result);
-    res.redirect('/');
-  })
-  .catch(err => {
-    console.log(err);
-  })
-})
-
-
-//if no route mactch then through page not found error 
+//if no route match then through page not found error 
 
 app.all('*' , (req , res , next) => {
   next(new ExpressError(404 , "Page not Found"));
@@ -186,7 +171,7 @@ app.all('*' , (req , res , next) => {
 
 app.use((err , req ,res , next) => {
   let {statusCode=500 , message = "Something went Wrong!"} = err;
-  console.log(message);
+  // console.log(message);
   // res.status(statusCode).send(message);
   res.render('error.ejs' , {err})
 })
