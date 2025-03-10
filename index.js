@@ -38,7 +38,8 @@ app.use(express.json());
 //Moongose basic setup
 
 async function main() {
-  await mongoose.connect("mongodb://127.0.0.1:27017/airbnb");
+  // await mongoose.connect("mongodb://127.0.0.1:27017/airbnb");
+  awit mongoose.connect("mongodb+srv://airbnb:airbnb123@airbnb.ip8tf.mongodb.net/?retryWrites=true&w=majority&appName=airbnb");
 }
 
 main()
