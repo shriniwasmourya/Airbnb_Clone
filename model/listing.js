@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const { type } = require("os");
 const { title } = require("process");
-const Review = require('./review.js')
+const Review = require('./review.js');
+const User = require('./user.js');
 
 const listingSchema = new mongoose.Schema({
   title: {
@@ -13,8 +14,8 @@ const listingSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    default : "https://static01.nyt.com/images/2024/11/12/world/UK-building/UK-building-articleLarge.png?quality=75&auto=webp&disable=upscale",
-    set: (v) => (v === "" ? "https://static01.nyt.com/images/2024/11/12/world/UK-building/UK-building-articleLarge.png?quality=75&auto=webp&disable=upscale" : v),
+    default : "https://media.architecturaldigest.com/photos/5679d4bc7fd9a58978b7c95e/16:9/w_2560%2Cc_limit/tour-nycs-first-zaha-hadid-designed-apartment-building-18.jpg",
+    set: (v) => (v === "" ? "https://media.architecturaldigest.com/photos/5679d4bc7fd9a58978b7c95e/16:9/w_2560%2Cc_limit/tour-nycs-first-zaha-hadid-designed-apartment-building-18.jpg" : v),
   },
 
   price : {
@@ -34,7 +35,12 @@ const listingSchema = new mongoose.Schema({
       type : mongoose.Schema.Types.ObjectId,
       ref: "Review",
     }
-  ]
+  ],
+
+  owner : {
+    type : mongoose.Schema.Types.ObjectId,
+    ref : "User"
+  }
 });
 
 listingSchema.post("findOneAndDelete" , async(Listing) => {

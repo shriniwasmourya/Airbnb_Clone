@@ -1,86 +1,90 @@
 <%- layout('layouts/boilerplate') %>
-<body>
-  <div class="row">
-    <div class="col-8 offset-2">
-      <h2><%=list.title%></h2>
-    </div>
-    <div class="col-6 post-img"></div>
+
+  <body>
     <div class="row">
       <div class="col-8 offset-2">
-        <img src="<%= list.image %>" alt="" />
-        <p><%= list.description %></p>
-        <p>₹<%= list.price.toLocaleString("en-IN") %></p>
-        <h4><%= list.location %></h4>
+        <h2>
+          <%=list.title%>
+        </h2>
+      </div>
+      <div class="col-6 post-img"></div>
+      <div class="row">
+        <div class="col-8 offset-2">
+          <img src="<%= list.image %>" alt="" />
+          <p>Owned by <%= list.owner.username %>
+          </p>
+          <p>
+            <%= list.description %>
+          </p>
+          <p>₹<%= list.price.toLocaleString("en-IN") %>
+          </p>
+          <h4>
+            <%= list.location %>
+          </h4>
 
-        <a href="/listing/<%= list.id %>/edit"
-          ><button class="btn">Edit this Listing</button></a
-        >
-        <form action="/listing/<%= list.id %>/?_method=DELETE" method="post">
-          <button class="btn mt-3 mb-2">DELETE</button>
-        </form>
-        <hr />
-        <div class="review col-8">
-          <h4>Leave a Review</h4>
-          <form
-            action="/listing/<%= list.id %>/review"
-            method="post"
-            class="needs-validatior"
-          >
-            <div>
-              <label for="review" class="form-label">Rating </label>
-              <input
-                type="range"
-                name="review[rating]"
-                id="review"
-                min="1"
-                max="5"
-              />
-            </div>
+          <% if(currentUser && list.owner._id.equals(currentUser._id)) { %>
+            <a href="/listing/<%= list.id %>/edit"><button class="btn">Edit this Listing</button></a>
+            <form action="/listing/<%= list.id %>/?_method=DELETE" method="post">
+              <button class="btn mt-3 mb-2">DELETE</button>
+            </form>
 
-            <div>
-              <label for="comment" class="form-label">Comment</label><br />
-              <textarea
-                name="review[comment]"
-                id="comment"
-                class="form-control col-8"
-                required
-              ></textarea>
-              <div class="invalid-feedback">
-                Please submit some comments for review
-              </div>
-              <br />
-            </div>
-            <button class="btn btn-outline-dark">Submit</button>
-          </form>
-          <br />
-        </div>
-        <hr />
-        <h1><b>All Review</b></h1>
-        <!-- <ul>
+            <%}%>
+              <hr />
+
+              <div class="review col-8">
+                  <% if(currentUser) {%>
+                  <h4>Leave a Review</h4>
+                  <% } %>
+                  <form action="/listing/<%= list.id %>/review" method="post" class="needs-validatior">
+                    <div>
+                      <label for="review" class="form-label">Rating </label>
+                      <input type="range" name="review[rating]" id="review" min="1" max="5" />
+                    </div>
+
+                    <div>
+                      <label for="comment" class="form-label">Comment</label><br />
+                      <textarea name="review[comment]" id="comment" class="form-control col-8" required></textarea>
+                      <div class="invalid-feedback">
+                        Please submit some comments for review
+                      </div>
+                      <br />
+                    </div>
+                    <button class="btn btn-outline-dark">Submit</button>
+                  </form>
+                  <br />
+                </div>
+      
+
+                  <hr />
+                  <h1><b>All Review</b></h1>
+                  <!-- <ul>
             <% for(rev of list.review){ %>
             <li><%= rev.comment %>, <%=rev.rating%> stars</li>
             <%}%>
           </ul> -->
 
-        <div class="row">
-          <% for(rev of list.review){ %>
-          <div class="card col-5 mb-3 ms-3">
-            <div class="card-body">
-              <div class="card-title">Shriniwas</div>
-              <p class="card-text"><%= rev.comment %></p>
-              <p class="card-text"><%= rev.rating %>stars</p>
-            </div>
-            <form
-              action="/listing/<%= list.id %>/review/<%= rev.id %>?_method=DELETE"
-              method="post"
-              class="mb-3"
-            >
-              <button class="btn btn-sm btn-dark">Delete</button>
-            </form>
-          </div>
-          <% } %>
+                  <div class="row">
+                    <% for(rev of list.review){ %>
+                      <div class="card col-5 mb-3 ms-3">
+                        <div class="card-body">
+                          <div class="card-title">
+                            <%= rev.author.username%>
+                          </div>
+                          <p class="card-text">
+                            <%= rev.comment %>
+                          </p>
+                          <p class="card-text">
+                            <%= rev.rating %>stars
+                          </p>
+                        </div>
+                        <form action="/listing/<%= list.id %>/review/<%= rev.id %>?_method=DELETE" method="post"
+                          class="mb-3">
+                          <button class="btn btn-sm btn-dark">Delete</button>
+                        </form>
+                      </div>
+                      <% } %>
+                  </div>
         </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>

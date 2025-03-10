@@ -1,9 +1,11 @@
 <%- layout('layouts/boilerplate') %>
+
 <body>
   <div class="row">
     <div class="col-8 offset-2">
       <h1>Add new data here</h1>
-      <form action="/" method="post" novalidate>
+  
+      <form action="/listing" method="post" novalidate>
         <div>
           <label for="title" class="form-label">Title</label>
           <input
@@ -19,6 +21,7 @@
         <div>
           <label for="description" class="form-label">Description</label>
           <textarea
+          rows="3"
             required
             name="description"
             class="form-control"
@@ -61,9 +64,11 @@
         </div>
 
         <div>
+          <br>
           <button class="btn btn-dark">Submit</button>
         </div>
       </form>
+      <br><br>
     </div>
   </div>
 </body>

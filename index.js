@@ -6,15 +6,19 @@ const Listing = require("./model/listing.js");
 const ejsMate = require("ejs-mate");
 const wrapAsync = require('./utils/wrapAsync.js')
 const ExpressError = require('./utils/ExpressError.js');
-const {listingSchema , reviewSchema} = require('./schema.js');    //grey clr bcz this method not used in this file
+const { listingSchema, reviewSchema } = require('./schema.js');    //grey clr bcz this method not used in this file
 const review = require("./model/review.js");
-const listing = require("./routes/listing.js")
-const reviewRoute = require('./routes/review.js')
+const listingRouter = require("./routes/listing.js")
+const reviewRouter = require('./routes/review.js')
+const userRouter = require("./routes/user.js");
 const cookie = require('./routes/cookies.js');
 const cookieParser = require('cookie-parser');
 const session = require('express-session');
 const flash = require('connect-flash');
 const { name } = require("ejs");
+const passport = require('passport');
+const localStrategy = require('passport-local');
+const User = require('./model/user.js');
 
 
 
@@ -23,10 +27,10 @@ app.use(method("_method"));
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
-app.engine('ejs' , ejsMate);
+app.engine('ejs', ejsMate);
 
 //for static files like css 
-app.use(express.static(path.join(__dirname , "/public")))
+app.use(express.static(path.join(__dirname, "/public")))
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -46,11 +50,11 @@ main()
   });
 
 
-  //Cookies : small block of data that cret by web server while user broweing a website and stred in locl systm
+//Cookies : small block of data that cret by web server while user broweing a website and stred in locl systm
 
-  app.use('/getcookies' , cookie);
+app.use('/getcookies', cookie);
 
-  app.use(cookieParser());
+app.use(cookieParser());
 
 
 app.listen(3600, () => {
@@ -58,23 +62,56 @@ app.listen(3600, () => {
 });
 
 
+
 //Express Session 
 
-app.use(session({secret : "secretcodeencodewithrandomeword" , resave : false , saveUninitialized :false}));
+app.use(session({ secret: "secretcodeencodewithrandomeword",
+   resave: false,
+  saveUninitialized: false,
+  cookie : {
+    expires : Date.now() + 7 * 24 * 60 * 60 * 1000,
+    maxAge : 7 * 24 * 60 * 60 * 1000,
+    httpOnly :true,
+  }
+
+ }));
 app.use(flash());   //sirf itna krne se isko use kr skte hai..
 
-app.get("/session" , (req , res) => {
-  
-  res.send('Session successfully');   
+/* Configuring Strategy */
+//
+
+app.use(passport.initialize());   //isse har ek req kliye passport initialize ho jayega..
+
+app.use(passport.session())     //user jab page to page request send krta h to passport ko pta hona chahiye same uer h ya different uer
+
+passport.use(new localStrategy(User.authenticate()));   
+/* JO bhi hmara user aaya , request aaye , wo localStratefy ke through authentic hone chahiye , user ko 
+authentic krne ke liye {authentic} method use hoga , Auth : mtlb user ko login/signup krbana */
+
+
+passport.serializeUser(User.serializeUser());
+/* User se realted jitne bhi info hai age session ke andr store krbana h usko bolte hai serialze */
+
+
+passport.deserializeUser(User.deserializeUser());
+/* User se realted jitne bhi info hai age session ke andr se delete/Htani hai  usko bolte hai deserialze */
+ 
+
+
+
+
+app.get("/session", (req, res) => {
+
+  res.send('Session successfully');
 })
 
 //how to track session request 
 
-app.get("/requestcount" , (req , res) => {
-  if(req.session.count){
+app.get("/requestcount", (req, res) => {
+  if (req.session.count) {
     req.session.count++;
-  }else{
-    req.session.count =1;
+  } else {
+    req.session.count = 1;
   }
 
   res.send(`request count received ${req.session.count} times`);
@@ -88,7 +125,7 @@ app.get("/requestcount" , (req , res) => {
 //   // req.flash("success" , "User Session created successsfully");
 
 //   // if(req.session.name == 'anonymous'){
-    
+
 //   // }
 //   // req.flash("error" , "User not registered!");
 
@@ -146,17 +183,39 @@ app.get("/testListing", (req, res) => {
   res.send("successfully testing");
 });
 
+app.use((req , res , next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  res.locals.currentUser = req.user;
+  next();
+})
 
-app.use("/listing" , listing);
-app.use('/listing/:id/review' , reviewRoute);
+//Demo user for tesitng passport
+
+app.get("/demouser" , async(req , res) =>{
+  let fakeUser = new User({
+    email : "fakeuser@gmail.com",
+    username : "fakeuser",
+  });
+
+
+  let regUser = await User.register(fakeUser , "123@abc");    //auto check if username differnt or not
+  res.send(regUser);
+})
+
+
+
+app.use("/listing", listingRouter);
+app.use('/listing/:id/review', reviewRouter);
+app.use("/" , userRouter);
 
 //middleware to handle async
 
-app.use((err , req , res , next)=>{
+app.use((err, req, res, next) => {
   console.log("Something went wrong..");
-  let {statusCode=500 , message="Wrong"} = err;
+  let { statusCode = 500, message = "Wrong" } = err;
   console.log(err.message);
-  res.status(statusCode).render('error.ejs' , {err})
+  res.status(statusCode).render('error.ejs', { err })
 })
 
 
@@ -165,13 +224,13 @@ app.use((err , req , res , next)=>{
 
 //if no route match then through page not found error 
 
-app.all('*' , (req , res , next) => {
-  next(new ExpressError(404 , "Page not Found"));
+app.all('*', (req, res, next) => {
+  next(new ExpressError(404, "Page not Found"));
 })
 
-app.use((err , req ,res , next) => {
-  let {statusCode=500 , message = "Something went Wrong!"} = err;
+app.use((err, req, res, next) => {
+  let { statusCode = 500, message = "Something went Wrong!" } = err;
   // console.log(message);
   // res.status(statusCode).send(message);
-  res.render('error.ejs' , {err})
+  res.render('error.ejs', { err })
 })
